@@ -1,0 +1,25 @@
+[package]
+name = "sizing-wasm"
+version = "0.1.0"
+edition = "2021"
+authors = ["Christley OLUBELA"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+sizing-core = { path = "../sizing-core" }
+rust_decimal = { version = "1.36", default-features = false, features = ["maths", "std"] }
+wasm-bindgen = "0.2"
+
+[package.metadata.build-note]
+# This crate has NOT been compiled to wasm32-unknown-unknown in the
+# sandbox that authored it — that target's std lib isn't installed and
+# isn't obtainable there (needs `rustup target add wasm32-unknown-unknown`,
+# and rustup itself needs static.rust-lang.org, outside that sandbox's
+# network allowlist). `cargo check -p sizing-wasm` against the HOST
+# target does pass cleanly there (see src/lib.rs's doc comment for
+# exactly what that does and doesn't prove). Build for real with:
+#   rustup target add wasm32-unknown-unknown
+#   wasm-pack build --target web
+note = "see comment above"

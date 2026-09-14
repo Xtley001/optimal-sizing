@@ -1,0 +1,18 @@
+[package]
+name = "sizing-core"
+version = "0.1.0"
+edition = "2021"
+authors = ["Christley OLUBELA"]
+description = "Profit-maximizing trade sizing against CPMM, StableSwap, and PMM liquidity curves, with an explicit GuaranteeTier on every result."
+license = "MIT"
+repository = "https://github.com/Xtley001/optimal-sizing"
+readme = "../../README.md"
+keywords = ["defi", "amm", "arbitrage", "decimal", "finance"]
+categories = ["finance", "mathematics"]
+
+[dependencies]
+rust_decimal = { version = "1.36", default-features = false, features = ["maths", "std"] }
+rust_decimal_macros = "1.36"
+
+[dev-dependencies]
+proptest = "1.5"

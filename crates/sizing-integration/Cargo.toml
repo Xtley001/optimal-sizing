@@ -1,0 +1,12 @@
+[package]
+name = "sizing-integration"
+version = "0.1.0"
+edition = "2021"
+authors = ["Christley OLUBELA"]
+
+[dependencies]
+sizing-core = { path = "../sizing-core" }
+rust_decimal = { version = "1.36", default-features = false, features = ["maths", "std"] }
+rust_decimal_macros = "1.36"
+reqwest = { version = "0.11", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+serde_json = "1.0"

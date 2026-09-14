@@ -1,0 +1,11 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/sizing-core",
+    "crates/sizing-bench",
+    "crates/sizing-integration",
+    "crates/sizing-router",
+    "crates/sizing-wasm",
+    "crates/sizing-cli",
+    "crates/sizing-watch",
+]

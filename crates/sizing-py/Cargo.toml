@@ -1,0 +1,14 @@
+[package]
+name = "sizing-py"
+version = "0.1.0"
+edition = "2021"
+authors = ["Christley OLUBELA"]
+
+[lib]
+name = "sizing_py"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+sizing-core = { path = "../sizing-core" }
+rust_decimal = { version = "1.36", features = ["maths"] }
+pyo3 = { version = "0.29", features = ["extension-module"] }
