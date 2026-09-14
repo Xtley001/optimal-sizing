@@ -3,14 +3,20 @@ name = "sizing-watch"
 version = "0.1.0"
 edition = "2021"
 authors = ["Christley OLUBELA"]
+description = "Real-time streaming sizing daemon across DEX liquidity pools"
+license = "MIT"
+repository = "https://github.com/Xtley001/optimal-sizing"
+readme = "../../README.md"
+keywords = ["defi", "amm", "streaming", "daemon", "finance"]
+categories = ["command-line-utilities", "finance"]
 
 [[bin]]
 name = "sizing-watch"
 path = "src/main.rs"
 
 [dependencies]
-sizing-core = { path = "../sizing-core" }
-sizing-router = { path = "../sizing-router" }
+sizing-core = { path = "../sizing-core", version = "0.1.0" }
+sizing-router = { path = "../sizing-router", version = "0.1.0" }
 rust_decimal = { version = "1.36", default-features = false, features = ["maths", "std", "serde-with-str"] }
 tokio = { version = "1.38", features = ["rt-multi-thread", "macros", "sync", "time", "signal"] }
 serde = { version = "1.0", features = ["derive"] }

@@ -1,0 +1,157 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      publish_to_crates_io:
+        description: 'Publish crates to crates.io (requires CARGO_REGISTRY_TOKEN secret)'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Verify workspace tests & lints
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache cargo registry and build output
+        uses: Swatinem/rust-cache@v2
+
+      - name: cargo test --workspace
+        run: cargo test --workspace
+
+      - name: cargo clippy --workspace -- -D warnings
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+  publish-crates:
+    name: Publish to crates.io
+    needs: test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.publish_to_crates_io == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Publish sizing-core
+        if: env.CARGO_REGISTRY_TOKEN != ''
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          echo "Publishing sizing-core to crates.io..."
+          cargo publish -p sizing-core
+
+      - name: Wait for crates.io index propagation
+        if: env.CARGO_REGISTRY_TOKEN != ''
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: sleep 45
+
+      - name: Publish sizing-router
+        if: env.CARGO_REGISTRY_TOKEN != ''
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          echo "Publishing sizing-router to crates.io..."
+          cargo publish -p sizing-router || echo "sizing-router publish skipped or waiting for index"
+
+      - name: Skip publishing notice
+        if: env.CARGO_REGISTRY_TOKEN == ''
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          echo "CARGO_REGISTRY_TOKEN secret is not set in repository secrets."
+          echo "Skipping direct crates.io publish. You can add the secret under Settings -> Secrets and variables -> Actions."
+
+  build-binaries:
+    name: Build release binaries (${{ matrix.target }})
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive_ext: tar.gz
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive_ext: zip
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            archive_ext: tar.gz
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            archive_ext: tar.gz
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build release binaries
+        run: cargo build --release --target ${{ matrix.target }} -p sizing-cli -p sizing-watch
+
+      - name: Package artifacts (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          [ "$TAG_NAME" = "$GITHUB_REF" ] && TAG_NAME="v0.1.0"
+          ARCHIVE_NAME="optimal-sizing-${TAG_NAME}-${{ matrix.target }}.${{ matrix.archive_ext }}"
+          cd target/${{ matrix.target }}/release
+          tar -czvf "../../../${ARCHIVE_NAME}" sizing-cli sizing-watch
+          cd ../../..
+          shasum -a 256 "${ARCHIVE_NAME}" > "${ARCHIVE_NAME}.sha256"
+
+      - name: Package artifacts (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $tag = if ($env:GITHUB_REF -match '^refs/tags/(.+)$') { $matches[1] } else { 'v0.1.0' }
+          $archiveName = "optimal-sizing-${tag}-${{ matrix.target }}.zip"
+          Compress-Archive -Path target/${{ matrix.target }}/release/sizing-cli.exe, target/${{ matrix.target }}/release/sizing-watch.exe -DestinationPath $archiveName
+          $hash = (Get-FileHash -Path $archiveName -Algorithm SHA256).Hash.ToLower()
+          "$hash  $archiveName" | Out-File -Encoding ascii -FilePath "$archiveName.sha256"
+
+      - name: Upload binary asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ matrix.target }}
+          path: |
+            optimal-sizing-*-${{ matrix.target }}.*
+
+  github-release:
+    name: Create GitHub Release
+    needs: [test, build-binaries]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all binary artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*
+          generate_release_notes: true

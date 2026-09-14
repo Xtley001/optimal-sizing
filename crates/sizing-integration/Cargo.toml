@@ -3,6 +3,7 @@ name = "sizing-integration"
 version = "0.1.0"
 edition = "2021"
 authors = ["Christley OLUBELA"]
+publish = false
 
 [dependencies]
 sizing-core = { path = "../sizing-core" }

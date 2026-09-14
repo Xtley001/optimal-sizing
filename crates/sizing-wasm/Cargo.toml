@@ -3,6 +3,7 @@ name = "sizing-wasm"
 version = "0.1.0"
 edition = "2021"
 authors = ["Christley OLUBELA"]
+publish = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]

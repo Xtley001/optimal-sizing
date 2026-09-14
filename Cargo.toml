@@ -9,3 +9,6 @@ members = [
     "crates/sizing-cli",
     "crates/sizing-watch",
 ]
+exclude = [
+    "crates/sizing-py",
+]
