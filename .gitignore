@@ -37,3 +37,5 @@ Thumbs.db
 # Internal update planning & local drafts
 update/
 article.md
+articles/
+docs/articles/
