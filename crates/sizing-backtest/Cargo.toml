@@ -1,0 +1,20 @@
+[package]
+name = "sizing-backtest"
+version = "1.0.0"
+edition = "2021"
+authors = ["Christley OLUBELA (Xtley001)"]
+description = "Historical AMM pool replay and realized alpha benchmark engine against grid search"
+license = "MIT"
+repository = "https://github.com/Xtley001/optimal-sizing"
+keywords = ["defi", "amm", "backtest", "arbitrage", "mev"]
+categories = ["algorithms", "finance"]
+
+[dependencies]
+sizing-core = { path = "../sizing-core", version = "1.0.0" }
+rust_decimal = { version = "1.36", default-features = false, features = ["maths", "std", "serde-with-str"] }
+rust_decimal_macros = "1.36"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dev-dependencies]
+proptest = "1.4"

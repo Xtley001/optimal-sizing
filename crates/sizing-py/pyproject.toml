@@ -1,0 +1,30 @@
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "optimal-sizing"
+version = "1.0.0"
+description = "Chain-agnostic profit-maximizing AMM trade sizing in Rust with Python bindings"
+authors = [{ name = "Christley OLUBELA (Xtley001)", email = "xtley001@users.noreply.github.com" }]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = ["defi", "amm", "arbitrage", "mev", "uniswap", "curve", "balancer", "trading", "quant"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "sizing_py"
+python-source = "python"

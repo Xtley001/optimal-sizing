@@ -2,6 +2,34 @@
 
 What's actually built, in past tense, as it was built — as opposed to [`ROADMAP.md`](./ROADMAP.md), which is only what's genuinely still proposed.
 
+## 5-Pillar Comprehensive Expansion (v1.0.0)
+
+Executed full autonomous upgrade spanning all 5 strategic pillars across the workspace:
+
+### 1. New AMM Curve Families (`sizing-core`, `sizing-router`)
+- **Velodrome / Aerodrome Stable Curve ($x^3 y + x y^3 = k$)**: Implemented in `curves/velodrome_stable.rs` using normalized Newton-Raphson iteration preventing `Decimal` overflow on large reserves $\ge 10^7$. Profit maximized via Golden-Section search with strict bracket contraction (`GuaranteeTier::NumericallyGuaranteed`). Property-tested in `velodrome_proptest.rs` (100 cases).
+- **Discretized Liquidity Book (DLMM)**: Implemented in `curves/dlmm.rs` modeling Trader Joe & Meteora bin-partitioned liquidity books. Analytical closed-form aggregation across profitable bins (`GuaranteeTier::ProvenOptimal`). Property-tested in `dlmm_proptest.rs`.
+- **Full Router Integration**: Added `Leg::VelodromeStable` and `Leg::LiquidityBook` into `sizing-router::Leg`, quoting seamlessly across arbitrary heterogeneous multi-hop cascades.
+
+### 2. Adversarial Slippage & Rollup Blob Gas (`sizing-core`)
+- **`AdversePricingCurve`**: Added dynamic price impact adjustment scaling effective output based on marginal pool capacity utilization and adverse selection.
+- **`CurveSlippageBound`**: Added pre-execution boundary validation with strict tolerance enforcement.
+- **`ProtocolGasConstants` & `l2_rollup_fixed_cost`**: Added calibrated gas consumption baselines (Uniswap v2 110k, Uniswap v3 130k, Curve 250k, Balancer 140k, Velodrome 120k) and EIP-4844 L1 blob gas pricing for Optimism, Base, and Arbitrum rollups.
+
+### 3. Constrained Multi-Pool Capital Allocation (`sizing-portfolio`)
+- **New Workspace Crate `sizing-portfolio`**: Solves optimal joint allocation across $M$ concurrent arbitrage / liquidity pools under a shared hard capital budget $B$.
+- **Dual Water-Filling Algorithm**: Solves the Lagrange dual via bisection on marginal return $\lambda$, with exact capacity boundary clipping and strict budget feasibility enforcement.
+- **Verification**: Zero float arithmetic (`Decimal` only). Comprehensive property testing in `portfolio_proptest.rs` confirming $\sum c_i^* \le B$ and $\forall i, c_i^* \le c_i^{\max}$.
+
+### 4. WebSocket Streaming & Historical Backtesting
+- **Streaming Service (`sizing-watch`)**: Upgraded to async `tokio-tungstenite` WebSocket client with `eth_subscribe("newHeads")`, streaming block event processing, and automatic polling fallback.
+- **Historical Backtesting Engine (`sizing-backtest`)**: New crate `sizing-backtest` providing replay harness evaluating multi-pool historical state trajectories, contrasting analytical sizing profit against naive grid search.
+
+### 5. Packaging, Type Stubs & CLI Enhancements
+- **Python Packaging (`sizing-py`)**: Created `pyproject.toml` (Maturin build backend) and full `.pyi` type stubs in `python/sizing_py/`, updated PyO3 0.29 Bound API.
+- **WebAssembly Packaging (`sizing-wasm`)**: Created npm package manifest `package.json` for `@optimal-sizing/wasm` with TypeScript declarations (`index.d.ts`).
+- **Enhanced CLI (`sizing-cli`)**: Added `RouteFile` subcommand loading heterogeneous routes from JSON files, and direct `velodrome` CLI sizing command.
+
 ## Code review fixes
 
 A later external review of the codebase (a static read, no compiler available to the reviewer) found several real issues. Each was independently re-verified against the actual code — and in two cases corrected or narrowed — before fixing. Full writeup: [`docs/ARCHITECTURE.md § Fixes from a later code review`](./docs/ARCHITECTURE.md).

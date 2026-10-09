@@ -5,7 +5,8 @@ use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 
 use sizing_core::curves::{
-    BalancerWeightedPool, ConcentratedLiquidity, Cpmm, CurveCryptoSwap, DodoPmm, Pmm, StableSwap,
+    BalancerWeightedPool, ConcentratedLiquidity, Cpmm, CurveCryptoSwap, DodoPmm, LiquidityBook,
+    Pmm, StableSwap, VelodromeStable,
 };
 use sizing_core::error::SizingError;
 use sizing_core::traits::{PricingCurve, SizingAlgorithm};
@@ -28,6 +29,10 @@ pub enum Leg {
     DodoPmm(DodoPmm),
     /// Curve CryptoSwap dynamic-invariant pool (Curve v2).
     CurveCryptoSwap(CurveCryptoSwap),
+    /// Velodrome / Aerodrome stable pool (x^3 y + x y^3 = k).
+    VelodromeStable(VelodromeStable),
+    /// Liquidity Book (DLMM) bin-based pool.
+    LiquidityBook(LiquidityBook),
 }
 
 impl Leg {
@@ -41,6 +46,8 @@ impl Leg {
             Leg::BalancerWeighted(b) => b.quote(delta_in),
             Leg::DodoPmm(d) => d.quote(delta_in),
             Leg::CurveCryptoSwap(cs) => cs.quote(delta_in),
+            Leg::VelodromeStable(v) => v.quote(delta_in),
+            Leg::LiquidityBook(l) => l.quote(delta_in),
         }
     }
 
@@ -69,6 +76,8 @@ impl Leg {
             Leg::BalancerWeighted(b) => b.optimal_size(synthetic_reference_price, constraints),
             Leg::DodoPmm(d) => d.optimal_size(synthetic_reference_price, constraints),
             Leg::CurveCryptoSwap(cs) => cs.optimal_size(synthetic_reference_price, constraints),
+            Leg::VelodromeStable(v) => v.optimal_size(synthetic_reference_price, constraints),
+            Leg::LiquidityBook(l) => l.optimal_size(synthetic_reference_price, constraints),
         }?;
         Ok(result.guarantee_tier)
     }

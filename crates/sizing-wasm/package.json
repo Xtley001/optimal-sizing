@@ -1,0 +1,27 @@
+{
+  "name": "@optimal-sizing/wasm",
+  "version": "1.0.0",
+  "description": "Chain-agnostic profit-maximizing AMM trade sizing compiled to WebAssembly",
+  "author": "Christley OLUBELA (Xtley001)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Xtley001/optimal-sizing.git"
+  },
+  "main": "sizing_wasm.js",
+  "types": "sizing_wasm.d.ts",
+  "files": [
+    "sizing_wasm_bg.wasm",
+    "sizing_wasm.js",
+    "sizing_wasm.d.ts"
+  ],
+  "keywords": [
+    "defi",
+    "amm",
+    "arbitrage",
+    "mev",
+    "webassembly",
+    "uniswap",
+    "curve"
+  ]
+}

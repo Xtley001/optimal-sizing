@@ -1,21 +1,34 @@
-/target
+# Build targets
+target/
+**/target/
 **/*.rs.bk
 *.pdb
 
-# Cargo.lock is intentionally committed, not ignored — this workspace has
-# binaries (sizing-bench, sizing-integration, sizing-cli) and pinned
-# toolchain-workaround dependency versions (see SETUP.md
-# "Toolchain note"), both of which benefit from reproducible builds more
-# than a pure-library-only workspace would.
+# Cargo.lock at root is intentionally committed, not ignored — this workspace has
+# binaries (sizing-bench, sizing-integration, sizing-cli) and pinned toolchain dependencies.
+# Excluded member locks:
+crates/sizing-py/Cargo.lock
 
-# sizing-py build artifacts (cdylib/.so land in target/, but a manual
-# `cp` for local Python testing — see CHANGELOG.md's Session 8 entry —
-# could leave one of these at the repo root)
+# Python / sizing-py build artifacts
 *.so
 *.pyd
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+wheels/
+.pytest_cache/
+
+# WASM / npm artifacts
+node_modules/
+pkg/
+crates/sizing-wasm/pkg/
 
 # Editor/OS cruft
 .vscode/*
 !.vscode/extensions.json
 .idea/
 .DS_Store
+Thumbs.db

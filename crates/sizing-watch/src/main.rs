@@ -87,7 +87,66 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         return Ok(());
     }
 
-    // Streaming daemon event loop
+    // Try WebSocket connection if real URL is configured
+    use futures_util::{SinkExt, StreamExt};
+    use tokio_tungstenite::connect_async;
+    use tokio_tungstenite::tungstenite::protocol::Message;
+
+    let ws_url = config.ws_rpc_url.clone();
+    if ws_url.starts_with("ws://") || ws_url.starts_with("wss://") {
+        eprintln!("sizing-watch: connecting to WebSocket RPC {}", ws_url);
+        if let Ok((mut ws_stream, _)) = connect_async(&ws_url).await {
+            eprintln!("sizing-watch: connected, subscribing to newHeads...");
+            let sub_msg = serde_json::json!({
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "eth_subscribe",
+                "params": ["newHeads"]
+            });
+            let _ = ws_stream.send(Message::Text(sub_msg.to_string())).await;
+
+            while running.load(Ordering::SeqCst) {
+                tokio::select! {
+                    msg = ws_stream.next() => {
+                        match msg {
+                            Some(Ok(Message::Text(text))) => {
+                                if let Ok(val) = serde_json::from_str::<serde_json::Value>(&text) {
+                                    if let Some(result) = val.get("params").and_then(|p| p.get("result")) {
+                                        if let Some(num_str) = result.get("number").and_then(|n| n.as_str()) {
+                                            let block_num = u64::from_str_radix(num_str.trim_start_matches("0x"), 16).unwrap_or(0);
+                                            let hash = result.get("hash").and_then(|h| h.as_str()).unwrap_or("").to_string();
+                                            let parent = result.get("parentHash").and_then(|h| h.as_str()).unwrap_or("").to_string();
+                                            cache.handle_new_head(block_num, hash, parent);
+
+                                            let ref_price = Decimal::from_str_exact("0.85").unwrap();
+                                            let gas_price = Decimal::from(25);
+                                            evaluate_opportunities(&config, &cache, ref_price, gas_price);
+                                        }
+                                    }
+                                }
+                            }
+                            Some(Ok(Message::Ping(data))) => {
+                                let _ = ws_stream.send(Message::Pong(data)).await;
+                            }
+                            Some(Err(e)) => {
+                                eprintln!("sizing-watch: ws error {e}, switching to polling");
+                                break;
+                            }
+                            None => break,
+                            _ => {}
+                        }
+                    }
+                    _ = sleep(Duration::from_millis(500)) => {
+                        if !running.load(Ordering::SeqCst) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Streaming daemon polling fallback loop
     let mut block = 20_000_000u64;
     while running.load(Ordering::SeqCst) {
         block += 1;

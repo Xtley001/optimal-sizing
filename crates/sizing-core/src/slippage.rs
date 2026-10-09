@@ -66,6 +66,56 @@ impl SlippageBound {
     }
 }
 
+pub use crate::traits::AdversePricingCurve;
+
+/// Worst-case minimum output bound evaluated directly against displaced pool reserves.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CurveSlippageBound {
+    /// Exact minimum amount out under adverse displacement.
+    pub min_amount_out: Decimal,
+    /// The adversarial input volume assumed for this bound.
+    pub adverse_delta_assumed: Decimal,
+    /// Effective realized slippage percentage: (unadverse_quote - min_amount_out) / unadverse_quote.
+    pub effective_slippage_fraction: Decimal,
+}
+
+impl CurveSlippageBound {
+    /// Constructs an exact slippage bound from a curve implementing `AdversePricingCurve`.
+    pub fn from_curve<C: AdversePricingCurve>(
+        curve: &C,
+        delta_in: Decimal,
+        adverse_in: Decimal,
+    ) -> Result<Self, SizingError> {
+        if delta_in <= Decimal::ZERO {
+            return Err(SizingError::InvalidReserves {
+                detail: format!("delta_in must be > 0, got {delta_in}"),
+            });
+        }
+        if adverse_in < Decimal::ZERO {
+            return Err(SizingError::InvalidReserves {
+                detail: format!("adverse_in must be >= 0, got {adverse_in}"),
+            });
+        }
+        let unadverse_quote = curve.quote(delta_in)?;
+        if unadverse_quote <= Decimal::ZERO {
+            return Err(SizingError::InvalidReserves {
+                detail: format!("unadverse quote was <= 0, got {unadverse_quote}"),
+            });
+        }
+        let min_amount_out = curve.quote_adverse(delta_in, adverse_in)?;
+        let effective_slippage_fraction = if unadverse_quote > Decimal::ZERO {
+            (unadverse_quote - min_amount_out) / unadverse_quote
+        } else {
+            Decimal::ZERO
+        };
+        Ok(Self {
+            min_amount_out,
+            adverse_delta_assumed: adverse_in,
+            effective_slippage_fraction,
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -101,5 +151,19 @@ mod tests {
             SlippageBound::from_quote(dec!(-1), dec!(0.01)),
             Err(SizingError::InvalidReserves { .. })
         ));
+    }
+
+    #[test]
+    fn curve_slippage_bound_on_cpmm_displaced_pool() {
+        use crate::curves::Cpmm;
+        use crate::traits::PricingCurve;
+        let pool = Cpmm::new(dec!(1_000_000), dec!(1_000_000), dec!(0.997)).unwrap();
+        // Normal quote for 1000 input
+        let normal_quote = pool.quote(dec!(1000)).unwrap();
+
+        // Adverse bound assuming 5000 frontrunning trade
+        let bound = CurveSlippageBound::from_curve(&pool, dec!(1000), dec!(5000)).unwrap();
+        assert!(bound.min_amount_out < normal_quote);
+        assert!(bound.effective_slippage_fraction > Decimal::ZERO);
     }
 }

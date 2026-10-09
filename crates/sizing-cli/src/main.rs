@@ -7,7 +7,8 @@ use serde::Deserialize;
 use std::fs;
 
 use sizing_core::curves::{
-    BalancerWeightedPool, ConcentratedLiquidity, Cpmm, CurveCryptoSwap, DodoPmm, Pmm, StableSwap,
+    BalancerWeightedPool, ConcentratedLiquidity, Cpmm, CurveCryptoSwap, DlmmBin, DodoPmm,
+    LiquidityBook, Pmm, StableSwap, VelodromeStable,
 };
 use sizing_core::error::SizingError;
 use sizing_core::traits::SizingAlgorithm;
@@ -78,6 +79,25 @@ enum LegSpec {
         #[serde(default)]
         input_index: usize,
     },
+    Velodrome {
+        x: Decimal,
+        y: Decimal,
+        fee: Decimal,
+    },
+    Dlmm {
+        bins: Vec<DlmmBinSpec>,
+        #[serde(default)]
+        active_bin_index: usize,
+        fee: Decimal,
+    },
+}
+
+#[derive(Deserialize)]
+struct DlmmBinSpec {
+    bin_id: i32,
+    price: Decimal,
+    reserve_x: Decimal,
+    reserve_y: Decimal,
 }
 
 fn default_output_index() -> usize {
@@ -180,8 +200,51 @@ impl LegSpec {
                     *input_index,
                 )?))
             }
+            LegSpec::Velodrome { x, y, fee } => {
+                Ok(Leg::VelodromeStable(VelodromeStable::new(*x, *y, *fee)?))
+            }
+            LegSpec::Dlmm {
+                bins,
+                active_bin_index,
+                fee,
+            } => {
+                let converted_bins = bins
+                    .iter()
+                    .map(|b| DlmmBin {
+                        bin_id: b.bin_id,
+                        price: b.price,
+                        reserve_x: b.reserve_x,
+                        reserve_y: b.reserve_y,
+                    })
+                    .collect();
+                Ok(Leg::LiquidityBook(LiquidityBook::new(
+                    converted_bins,
+                    *active_bin_index,
+                    *fee,
+                )?))
+            }
         }
     }
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum RouteJsonPayload {
+    List(Vec<LegSpec>),
+    Object { legs: Vec<LegSpec> },
+}
+
+fn parse_legs_json(json_str: &str) -> Result<Vec<Leg>, SizingError> {
+    let payload: RouteJsonPayload = serde_json::from_str(json_str).map_err(|e| {
+        SizingError::InvalidReserves {
+            detail: format!("Failed to parse route JSON: {e}"),
+        }
+    })?;
+    let specs = match payload {
+        RouteJsonPayload::List(specs) => specs,
+        RouteJsonPayload::Object { legs } => legs,
+    };
+    specs.into_iter().map(|s| s.to_leg()).collect()
 }
 
 #[derive(Subcommand)]
@@ -321,6 +384,32 @@ enum Command {
         legs_json: Option<String>,
         #[arg(long)]
         spec_file: Option<String>,
+        #[arg(long)]
+        price: Decimal,
+        #[arg(long, default_value = "0")]
+        fixed_cost: Decimal,
+        #[arg(long)]
+        max_size: Option<Decimal>,
+    },
+    /// Size an arbitrary multi-hop heterogeneous route loaded from a JSON file.
+    RouteFile {
+        #[arg(long)]
+        file: String,
+        #[arg(long)]
+        price: Decimal,
+        #[arg(long, default_value = "0")]
+        fixed_cost: Decimal,
+        #[arg(long)]
+        max_size: Option<Decimal>,
+    },
+    /// Size a Velodrome / Aerodrome stable pool (x^3 y + x y^3 = k).
+    Velodrome {
+        #[arg(long)]
+        x: Decimal,
+        #[arg(long)]
+        y: Decimal,
+        #[arg(long, default_value = "0.9995")]
+        fee: Decimal,
         #[arg(long)]
         price: Decimal,
         #[arg(long, default_value = "0")]
@@ -597,19 +686,7 @@ fn main() {
                 std::process::exit(1);
             };
 
-            let specs: Vec<LegSpec> = match serde_json::from_str(&json_str) {
-                Ok(s) => s,
-                Err(e) => {
-                    eprintln!("Failed to parse legs JSON: {e}");
-                    std::process::exit(1);
-                }
-            };
-
-            let legs: Vec<Leg> = match specs
-                .into_iter()
-                .map(|s| s.to_leg())
-                .collect::<Result<Vec<_>, _>>()
-            {
+            let legs = match parse_legs_json(&json_str) {
                 Ok(l) => l,
                 Err(e) => print_error(&e),
             };
@@ -624,6 +701,51 @@ fn main() {
                 )
             })
         }
+        Command::RouteFile {
+            file,
+            price,
+            fixed_cost,
+            max_size,
+        } => {
+            let json_str = match fs::read_to_string(&file) {
+                Ok(s) => s,
+                Err(e) => {
+                    eprintln!("Failed to read route spec file {file}: {e}");
+                    std::process::exit(1);
+                }
+            };
+
+            let legs = match parse_legs_json(&json_str) {
+                Ok(l) => l,
+                Err(e) => print_error(&e),
+            };
+
+            Route::new_multi_hop(legs).and_then(|route| {
+                route.optimal_size(
+                    price,
+                    SizingConstraints {
+                        fixed_cost,
+                        max_size,
+                    },
+                )
+            })
+        }
+        Command::Velodrome {
+            x,
+            y,
+            fee,
+            price,
+            fixed_cost,
+            max_size,
+        } => VelodromeStable::new(x, y, fee).and_then(|pool| {
+            pool.optimal_size(
+                price,
+                SizingConstraints {
+                    fixed_cost,
+                    max_size,
+                },
+            )
+        }),
         Command::Route2HopCpmm {
             leg1_x,
             leg1_y,
@@ -657,3 +779,32 @@ fn main() {
         Err(e) => print_error(&e),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_legs_json_array() {
+        let json = r#"[
+            {"type": "cpmm", "x": "1000", "y": "1000", "fee": "0.997"},
+            {"type": "velodrome", "x": "1000", "y": "1000", "fee": "0.9995"}
+        ]"#;
+        let legs = parse_legs_json(json).expect("should parse array");
+        assert_eq!(legs.len(), 2);
+    }
+
+    #[test]
+    fn test_parse_legs_json_object() {
+        let json = r#"{
+            "legs": [
+                {"type": "cpmm", "x": "1000", "y": "1000", "fee": "0.997"},
+                {"type": "stableswap", "reserves": ["1000", "1000"], "amplification": "100", "fee": "0.9996"},
+                {"type": "dlmm", "bins": [{"bin_id": 1, "price": "1.0", "reserve_x": "100", "reserve_y": "100"}], "fee": "0.998"}
+            ]
+        }"#;
+        let legs = parse_legs_json(json).expect("should parse object");
+        assert_eq!(legs.len(), 3);
+    }
+}
+

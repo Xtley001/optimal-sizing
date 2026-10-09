@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this software in research or algorithmic trading systems, please cite it as below."
+authors:
+  - family-names: "Olubela"
+    given-names: "Christley"
+    alias: "Xtley001"
+title: "optimal-sizing: Tiered-Guarantee Trade Sizing for Automated Market Makers"
+version: 1.0.0
+date-released: 2026-07-01
+url: "https://github.com/Xtley001/optimal-sizing"
+repository-code: "https://github.com/Xtley001/optimal-sizing"
+license: MIT
+keywords:
+  - "defi"
+  - "amm"
+  - "arbitrage"
+  - "mev"
+  - "trade-sizing"
+  - "algorithmic-trading"
+  - "rust"

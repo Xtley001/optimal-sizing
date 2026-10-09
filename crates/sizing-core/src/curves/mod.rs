@@ -4,14 +4,18 @@ pub mod balancer_weighted;
 pub mod concentrated_liquidity;
 pub mod cpmm;
 pub mod curve_cryptoswap;
+pub mod dlmm;
 pub mod dodo_pmm;
 pub mod pmm;
 pub mod stableswap;
+pub mod velodrome_stable;
 
 pub use balancer_weighted::BalancerWeightedPool;
 pub use concentrated_liquidity::{ConcentratedLiquidity, TickRange};
 pub use cpmm::Cpmm;
 pub use curve_cryptoswap::CurveCryptoSwap;
+pub use dlmm::{DlmmBin, LiquidityBook};
 pub use dodo_pmm::DodoPmm;
 pub use pmm::Pmm;
 pub use stableswap::StableSwap;
+pub use velodrome_stable::VelodromeStable;

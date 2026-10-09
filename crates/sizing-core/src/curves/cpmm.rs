@@ -7,7 +7,7 @@ use rust_decimal::MathematicalOps;
 
 use crate::error::SizingError;
 use crate::profit::NetProfit;
-use crate::traits::{PricingCurve, SizingAlgorithm};
+use crate::traits::{AdversePricingCurve, PricingCurve, SizingAlgorithm};
 use crate::types::{GuaranteeTier, SizingConstraints, SizingResult};
 
 // bisection_fallback's stopping criterion is not named anywhere in
@@ -206,3 +206,37 @@ impl SizingAlgorithm for Cpmm {
         })
     }
 }
+
+impl AdversePricingCurve for Cpmm {
+    fn quote_adverse(
+        &self,
+        delta_in: Decimal,
+        adverse_in: Decimal,
+    ) -> Result<Decimal, SizingError> {
+        if adverse_in == Decimal::ZERO {
+            return self.quote(delta_in);
+        }
+        if adverse_in < Decimal::ZERO {
+            return Err(SizingError::InvalidReserves {
+                detail: format!("adverse_in must be >= 0, got {adverse_in}"),
+            });
+        }
+        // Adverse trade displaces reserves to (x1, y1):
+        let adverse_out = self.quote(adverse_in)?;
+        let x1 = self.x + self.fee_retention * adverse_in;
+        let y1 = self.y - adverse_out;
+        if y1 <= Decimal::ZERO {
+            return Err(SizingError::InvalidReserves {
+                detail: format!("adverse trade depleted pool reserves: remaining y1={y1}"),
+            });
+        }
+        let denom = x1 + self.fee_retention * delta_in;
+        if denom <= Decimal::ZERO {
+            return Err(SizingError::InvalidReserves {
+                detail: format!("x1 + fee_retention * delta_in must be > 0, got {denom}"),
+            });
+        }
+        Ok(y1 * self.fee_retention * delta_in / denom)
+    }
+}
+

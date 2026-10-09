@@ -8,6 +8,8 @@ members = [
     "crates/sizing-wasm",
     "crates/sizing-cli",
     "crates/sizing-watch",
+    "crates/sizing-portfolio",
+    "crates/sizing-backtest",
 ]
 exclude = [
     "crates/sizing-py",

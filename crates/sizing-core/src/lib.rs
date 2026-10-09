@@ -27,7 +27,8 @@ pub mod traits;
 pub mod types;
 
 pub use error::SizingError;
-pub use gas::gas_aware_fixed_cost;
-pub use slippage::SlippageBound;
-pub use traits::{PricingCurve, SizingAlgorithm};
+pub use gas::{gas_aware_fixed_cost, l2_rollup_fixed_cost, L2RollupGasConfig, ProtocolGasConstants};
+pub use slippage::{CurveSlippageBound, SlippageBound};
+pub use traits::{AdversePricingCurve, PricingCurve, SizingAlgorithm};
 pub use types::{GuaranteeTier, SizingConstraints, SizingResult};
+

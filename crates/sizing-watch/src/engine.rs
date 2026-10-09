@@ -200,6 +200,12 @@ pub fn evaluate_opportunities(
                     Leg::CurveCryptoSwap(cs) => {
                         cs.optimal_size(reference_price, constraints.clone())
                     }
+                    Leg::VelodromeStable(v) => {
+                        v.optimal_size(reference_price, constraints.clone())
+                    }
+                    Leg::LiquidityBook(l) => {
+                        l.optimal_size(reference_price, constraints.clone())
+                    }
                 };
 
                 if let Ok(res) = sizing_res {

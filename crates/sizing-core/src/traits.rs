@@ -27,3 +27,15 @@ pub trait SizingAlgorithm: PricingCurve {
         constraints: SizingConstraints,
     ) -> Result<SizingResult, SizingError>;
 }
+
+/// A curve that supports calculating output under adversarial pre-swap frontrunning.
+pub trait AdversePricingCurve: PricingCurve {
+    /// Computes output of trade `delta_in` assuming competing trades totaling
+    /// `adverse_in` execute against the pool immediately prior.
+    fn quote_adverse(
+        &self,
+        delta_in: Decimal,
+        adverse_in: Decimal,
+    ) -> Result<Decimal, SizingError>;
+}
+

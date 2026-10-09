@@ -6,8 +6,11 @@ use std::str::FromStr;
 
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use pyo3::types::PyAny;
+use pyo3::types::{PyAny, PyDict};
+use pyo3::Py;
 use rust_decimal::Decimal;
+
+type PyObject = Py<PyAny>;
 
 use sizing_core::curves::{BalancerWeightedPool, ConcentratedLiquidity, Cpmm, Pmm, StableSwap};
 use sizing_core::traits::SizingAlgorithm;
@@ -23,7 +26,7 @@ fn parse_optional_decimal(obj: Option<&Bound<'_, PyAny>>, field: &str) -> PyResu
 }
 
 fn to_py_decimal(py: Python<'_>, value: Decimal) -> PyResult<PyObject> {
-    let decimal_module = py.import_bound("decimal")?;
+    let decimal_module = py.import("decimal")?;
     let decimal_class = decimal_module.getattr("Decimal")?;
     let obj = decimal_class.call1((value.to_string(),))?;
     Ok(obj.unbind())
@@ -54,8 +57,7 @@ pub struct SizingResult {
 }
 
 fn tier_detail(py: Python<'_>, tier: &GuaranteeTier) -> PyResult<PyObject> {
-    use pyo3::types::PyDict;
-    let dict = PyDict::new_bound(py);
+    let dict = PyDict::new(py);
     match tier {
         GuaranteeTier::ProvenOptimal => {}
         GuaranteeTier::NumericallyGuaranteed { convergence_conditions_met } => {
@@ -69,7 +71,7 @@ fn tier_detail(py: Python<'_>, tier: &GuaranteeTier) -> PyResult<PyObject> {
             dict.set_item("legs", tags)?;
         }
     }
-    Ok(dict.into())
+    Ok(dict.into_any().unbind())
 }
 
 fn to_py_result(py: Python<'_>, r: CoreSizingResult) -> PyResult<SizingResult> {
