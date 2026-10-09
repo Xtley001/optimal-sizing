@@ -1,6 +1,6 @@
-# optimal-sizing: Tiered-Guarantee Trade Sizing v1.0
+# optimal-sizing: Tiered-Guarantee Trade Sizing v2.0
 
-July 2026  
+October 2026  
 **Author:** Christley OLUBELA (Xtley001) · [https://github.com/Xtley001/optimal-sizing](https://github.com/Xtley001/optimal-sizing)  
 **License:** MIT
 

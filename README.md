@@ -2,7 +2,7 @@
 
 A chain-agnostic mathematical library for profit-maximizing AMM trade sizing across heterogeneous liquidity curves.
 
-[![CI](https://img.shields.io/github/actions/workflow/status/Xtley001/optimal-sizing/ci.yml?branch=main)](https://github.com/Xtley001/optimal-sizing/actions) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](./CHANGELOG.md) [![Python](https://img.shields.io/badge/pypi-optimal--sizing-blue.svg)](./crates/sizing-py) [![npm](https://img.shields.io/badge/npm-@optimal--sizing/wasm-red.svg)](./crates/sizing-wasm)
+[![CI](https://img.shields.io/github/actions/workflow/status/Xtley001/optimal-sizing/ci.yml?branch=main)](https://github.com/Xtley001/optimal-sizing/actions) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![Version](https://img.shields.io/badge/version-2.0.0-green.svg)](./CHANGELOG.md) [![Python](https://img.shields.io/badge/pypi-optimal--sizing-blue.svg)](./crates/sizing-py) [![npm](https://img.shields.io/badge/npm-@optimal--sizing/wasm-red.svg)](./crates/sizing-wasm)
 
 `optimal-sizing` computes exact profit-maximizing trade sizes for constant-product, StableSwap, concentrated liquidity, Balancer, and DLMM pools with explicit mathematical guarantee tiers. It replaces heuristic grid searches with analytical closed forms and quadratic Newton solvers in sub-microsecond latency. For the full mathematical derivations and proofs, see the [whitepaper](./docs/whitepaper.md).
 

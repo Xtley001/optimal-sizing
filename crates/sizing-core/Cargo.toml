@@ -1,6 +1,6 @@
 [package]
 name = "sizing-core"
-version = "1.0.0"
+version = "2.0.0"
 edition = "2021"
 authors = ["Christley OLUBELA (Xtley001)"]
 description = "Profit-maximizing trade sizing against CPMM, StableSwap, and PMM liquidity curves, with an explicit GuaranteeTier on every result."

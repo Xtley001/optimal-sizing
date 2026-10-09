@@ -1,11 +1,11 @@
 [package]
 name = "sizing-bench"
-version = "1.0.0"
+version = "2.0.0"
 edition = "2021"
 authors = ["Christley OLUBELA (Xtley001)"]
 publish = false
 
 [dependencies]
-sizing-core = { path = "../sizing-core" }
+sizing-core = { path = "../sizing-core", version = "2.0.0" }
 rust_decimal = { version = "1.36", default-features = false, features = ["maths", "std"] }
 rust_decimal_macros = "1.36"

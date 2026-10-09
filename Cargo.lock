@@ -1338,7 +1338,7 @@ checksum = "e3a9fe34e3e7a50316060351f37187a3f546bce95496156754b601a5fa71b76e"
 
 [[package]]
 name = "sizing-backtest"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "proptest",
  "rust_decimal",
@@ -1350,7 +1350,7 @@ dependencies = [
 
 [[package]]
 name = "sizing-bench"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "rust_decimal",
  "rust_decimal_macros",
@@ -1359,7 +1359,7 @@ dependencies = [
 
 [[package]]
 name = "sizing-cli"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "clap",
  "rust_decimal",
@@ -1371,7 +1371,7 @@ dependencies = [
 
 [[package]]
 name = "sizing-core"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "proptest",
  "rust_decimal",
@@ -1380,7 +1380,7 @@ dependencies = [
 
 [[package]]
 name = "sizing-integration"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "reqwest",
  "rust_decimal",
@@ -1391,7 +1391,7 @@ dependencies = [
 
 [[package]]
 name = "sizing-portfolio"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "proptest",
  "rust_decimal",
@@ -1402,7 +1402,7 @@ dependencies = [
 
 [[package]]
 name = "sizing-router"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "proptest",
  "rust_decimal",
@@ -1412,7 +1412,7 @@ dependencies = [
 
 [[package]]
 name = "sizing-wasm"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "rust_decimal",
  "sizing-core",
@@ -1421,7 +1421,7 @@ dependencies = [
 
 [[package]]
 name = "sizing-watch"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "clap",
  "futures-util",

@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "optimal-sizing"
-version = "1.0.0"
+version = "2.0.0"
 description = "Chain-agnostic profit-maximizing AMM trade sizing in Rust with Python bindings"
 authors = [{ name = "Christley OLUBELA (Xtley001)", email = "xtley001@users.noreply.github.com" }]
 license = { text = "MIT" }

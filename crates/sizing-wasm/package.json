@@ -1,6 +1,6 @@
 {
   "name": "@optimal-sizing/wasm",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Chain-agnostic profit-maximizing AMM trade sizing compiled to WebAssembly",
   "author": "Christley OLUBELA (Xtley001)",
   "license": "MIT",

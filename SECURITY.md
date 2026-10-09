@@ -36,5 +36,5 @@ Report security vulnerabilities directly to the maintainer via GitHub Security A
 
 | Version | Supported |
 |---|---|
-| `1.0.x` | Yes |
-| `< 1.0.0` | No |
+| `2.0.x` | Yes |
+| `< 2.0.0` | No |

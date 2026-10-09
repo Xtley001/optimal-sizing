@@ -2,9 +2,9 @@
 
 What's actually built, in past tense, as it was built — as opposed to [`ROADMAP.md`](./ROADMAP.md), which is only what's genuinely still proposed.
 
-## 5-Pillar Comprehensive Expansion (v1.0.0)
+## [2.0.0] - 2026-10-09 - 5-Pillar Comprehensive Expansion
 
-Executed full autonomous upgrade spanning all 5 strategic pillars across the workspace:
+Executes full autonomous upgrade spanning all 5 strategic pillars across the workspace:
 
 ### 1. New AMM Curve Families (`sizing-core`, `sizing-router`)
 - **Velodrome / Aerodrome Stable Curve ($x^3 y + x y^3 = k$)**: Implemented in `curves/velodrome_stable.rs` using normalized Newton-Raphson iteration preventing `Decimal` overflow on large reserves $\ge 10^7$. Profit maximized via Golden-Section search with strict bracket contraction (`GuaranteeTier::NumericallyGuaranteed`). Property-tested in `velodrome_proptest.rs` (100 cases).

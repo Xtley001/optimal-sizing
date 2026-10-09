@@ -3,6 +3,7 @@ target/
 **/target/
 **/*.rs.bk
 *.pdb
+*.proptest-regressions
 
 # Cargo.lock at root is intentionally committed, not ignored — this workspace has
 # binaries (sizing-bench, sizing-integration, sizing-cli) and pinned toolchain dependencies.
@@ -32,3 +33,7 @@ crates/sizing-wasm/pkg/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Internal update planning & local drafts
+update/
+article.md

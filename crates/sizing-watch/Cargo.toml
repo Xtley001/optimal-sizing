@@ -1,6 +1,6 @@
 [package]
 name = "sizing-watch"
-version = "1.0.0"
+version = "2.0.0"
 edition = "2021"
 authors = ["Christley OLUBELA (Xtley001)"]
 description = "Real-time streaming sizing daemon across DEX liquidity pools"
@@ -15,8 +15,8 @@ name = "sizing-watch"
 path = "src/main.rs"
 
 [dependencies]
-sizing-core = { path = "../sizing-core", version = "1.0.0" }
-sizing-router = { path = "../sizing-router", version = "1.0.0" }
+sizing-core = { path = "../sizing-core", version = "2.0.0" }
+sizing-router = { path = "../sizing-router", version = "2.0.0" }
 rust_decimal = { version = "1.36", default-features = false, features = ["maths", "std", "serde-with-str"] }
 tokio = { version = "1.38", features = ["rt-multi-thread", "macros", "sync", "time", "signal"] }
 tokio-tungstenite = { version = "0.23", features = ["rustls-tls-webpki-roots"] }
